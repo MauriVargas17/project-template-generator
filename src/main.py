@@ -8,7 +8,7 @@ from src.config import get_settings
 SETTINGS = get_settings()
 
 
-app = FastAPI(title=SETTINGS.service_name, version=SETTINGS.service_version)
+app = FastAPI(title=SETTINGS.service_name, version=SETTINGS.k_revision)
 
 app.add_middleware(
     CORSMiddleware,
