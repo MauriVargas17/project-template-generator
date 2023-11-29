@@ -41,16 +41,6 @@ def get_llm_service():
 def get_img_service():
     return TemplateImg()
 
-
-@app.post("/generate")
-def generate_project(params: ProjectParams, service: TemplateLLM = Depends(get_llm_service)) -> ProjectIdeas:
-    return service.generate(params)
-
-
-@app.get("/")
-def root():
-    return {"status": "OK"}
-
 @app.post("/get_number_of_people")
 def get_number_of_people(file: UploadFile = File(...), service: TemplateImg = Depends(get_img_service)) -> PeopleCountResponse:
     if not file.filename.lower().endswith((".jpg", ".jpeg", ".png")):
@@ -68,6 +58,18 @@ def get_number_of_people(file: UploadFile = File(...), service: TemplateImg = De
         people_count=service.predict_image(SETTINGS.img_model)
     )
     
+
+
+
+@app.post("/generate")
+def generate_project(params: ProjectParams, service: TemplateLLM = Depends(get_llm_service)) -> ProjectIdeas:
+    return service.generate(params)
+
+
+@app.get("/")
+def root():
+    return {"status": "OK"}
+
 
 
 #to delete later

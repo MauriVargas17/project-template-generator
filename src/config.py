@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     service_version: str = "0.9.2"
     k_revision: str = "1.0.0"
     log_level: str = "DEBUG"
-    openai_key: str = ""
+    openai_key: str = "123"
     model: GPTModel = GPTModel.gpt_3_5_turbo
     img_model: str = './models/efficientdet.tflite'
 
