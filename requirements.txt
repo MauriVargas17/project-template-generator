@@ -5,3 +5,8 @@ openai
 langchain
 python-dotenv
 ruff
+pillow
+numpy
+opencv-python
+matplotlib
+mediapipe

@@ -11,10 +11,11 @@ class GPTModel(str, Enum):
 class Settings(BaseSettings):
     service_name: str = "Projects Generator Service"
     service_version: str = "0.9.2"
-    k_revision: str
+    k_revision: str = "1.0.0"
     log_level: str = "DEBUG"
-    openai_key: str
+    openai_key: str = ""
     model: GPTModel = GPTModel.gpt_3_5_turbo
+    img_model: str = './models/efficientdet.tflite'
 
     class Config:
         env_file = ".env"

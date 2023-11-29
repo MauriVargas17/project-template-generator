@@ -4,6 +4,11 @@ from src.config import get_settings
 from src.prompts import PROJECT_TEMPLATE, ProjectParams
 from src.parsers import get_project_parser, ProjectIdeas
 
+# FOR LOCAL EXECUTION
+# from config import get_settings
+# from prompts import PROJECT_TEMPLATE, ProjectParams
+# from parsers import get_project_parser, ProjectIdeas
+
 _SETTINGS = get_settings()
 
 
