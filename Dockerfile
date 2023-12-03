@@ -7,6 +7,9 @@ COPY requirements.txt /
 RUN pip install -r requirements.txt
 
 COPY ./src /src
+RUN python -c "from transformers import pipeline; _ = pipeline('text-classification', model='ProsusAI/finbert')"
+RUN python -m spacy download en_core_web_sm
 #COPY .env /.env
 
 CMD uvicorn src.main:app --host 0.0.0.0 --port ${PORT}
+
