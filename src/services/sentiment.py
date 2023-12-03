@@ -22,6 +22,7 @@ class TemplateSentiment:
         label = result[0]["label"]
         score = result[0]["score"]
         category: str
+        score_transformed = 0
         #print(f"Original label: {label} and score: {score}")
         if label == "negative":
             score = -score
