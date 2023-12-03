@@ -1,9 +1,9 @@
 from functools import cache
 import time
 import spacy
-from src.config import get_settings
-from src.models import Analysis
-from src.sentiment import TemplateSentiment
+from src.utils.config import get_settings
+from src.utils.models import Analysis
+from src.services.sentiment import TemplateSentiment
 
 SETTINGS = get_settings()
 

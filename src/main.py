@@ -2,17 +2,16 @@ import csv
 import datetime
 from functools import cache
 from io import StringIO
-import statistics
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
 from starlette.middleware.cors import CORSMiddleware
-from src.models import Status, Sentiment, Analysis
-from src.llm_service import TemplateLLM
-from src.sentiment import TemplateSentiment
-from src.analysis import TemplateAnalysis
-from src.prompts import ProjectParams
-from src.parsers import ProjectIdeas
-from src.config import get_settings
+from src.utils.models import Status, Sentiment, Analysis
+from src.services.llm_service import TemplateLLM
+from src.services.sentiment import TemplateSentiment
+from src.services.analysis import TemplateAnalysis
+from src.utils.prompts import TextParams
+from src.utils.config import get_settings
+from src.resources.descriptions import sentiment_description, analysis_description, reports_description
 
 SETTINGS = get_settings()
 
@@ -26,78 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-async def not_found_exception_handler(request, exc):
-    return JSONResponse(
-        status_code=statistics.HTTP_404_NOT_FOUND,
-        content={"detail": "Resource not found"},
-    )
-
-app.add_exception_handler(HTTPException, not_found_exception_handler)
-
 entries = []
-@cache
-def get_llm_service():
-    return TemplateLLM()
-@cache
-def get_sentiment_service():
-    return TemplateSentiment()
-@cache
-def get_analysis_service():
-    return TemplateAnalysis()
-
-
-@app.post("/generate")
-def generate_project(params: ProjectParams, service: TemplateLLM = Depends(get_llm_service)) -> ProjectIdeas:
-    return service.generate(params)
-
-@app.post("/sentiment", description="""
-    This endpoint analyzes sentiment of financial text.
-
-    Args:
-        text (str): Text to analyze sentiment of in ENGLISH.
-
-    Returns:
-        Sentiment: Sentiment of the text, with confidence and how positive or negative it is, plus the time it took to analyze.
-
-    Examples:
-        "Stock Prices Soar as Company Beats Earnings Expectations"
-        "Global Markets Experience Volatility Amid Economic Uncertainty"
-        "Tech Giant Announces Record-Breaking Profits in Q3"
-        "Investors React to Central Bank's Decision on Interest Rates"
-        "Market Analysts Predict a Bearish Trend in the Coming Weeks"
-       
-    """)
-def sentiment_analysis(text: str = "The market shows a strong uptrend", service:  TemplateSentiment = Depends(get_sentiment_service)) -> Sentiment:
-    return service.analyze(text)
-
-@app.post("/analysis", description="""
-    This endpoint analyzes financial text.
-          
-    Args:
-        text (str): Text to analyze sentiment of in ENGLISH.
-          
-    Returns:
-        Analysis: Analysis of the text, with POS tagging, NER, embedding and sentiment, plus the time it took to analyze.
-    
-    Examples:
-        "Stock Prices Soar as Company Beats Earnings Expectations"
-        "Global Markets Experience Volatility Amid Economic Uncertainty"
-        "Tech Giant Announces Record-Breaking Profits in Q3"
-        "Investors React to Central Bank's Decision on Interest Rates"
-        "Market Analysts Predict a Bearish Trend in the Coming Weeks"  
-          """)
-def text_analysis(text: str = "The market shows a bad trend as Martin showed in Alaska last week", service: TemplateAnalysis = Depends(get_analysis_service)) -> Analysis:
-    analysis = service.analyze(text)
-    entries.append(create_entry(text, analysis))
-    return analysis
-
-@app.get("/status")
-def get_status() -> Status:
-    return Status(
-        status="OK",
-        version=SETTINGS.api_version,
-        models_hosted=SETTINGS.models.values(),
-    )
 
 def create_entry(text: str, analysis: Analysis):
     return {
@@ -115,7 +43,41 @@ def create_entry(text: str, analysis: Analysis):
 
     }
 
-@app.get('/reports')
+# Obtaining services
+@cache
+def get_llm_service():
+    return TemplateLLM()
+@cache
+def get_sentiment_service():
+    return TemplateSentiment()
+@cache
+def get_analysis_service():
+    return TemplateAnalysis()
+
+# API endpoints
+@app.post("/analysis_v2", description=analysis_description)
+def generate_project(params: TextParams, service: TemplateLLM = Depends(get_llm_service)) -> Analysis:
+    return service.generate(params)
+
+@app.post("/sentiment", description=sentiment_description)
+def sentiment_analysis(text: str = "The market shows a strong uptrend", service:  TemplateSentiment = Depends(get_sentiment_service)) -> Sentiment:
+    return service.analyze(text)
+
+@app.post("/analysis", description=analysis_description)
+def text_analysis(text: str = "The market shows a bad trend as Martin showed in Alaska last week", service: TemplateAnalysis = Depends(get_analysis_service)) -> Analysis:
+    analysis = service.analyze(text)
+    entries.append(create_entry(text, analysis))
+    return analysis
+
+@app.get("/status")
+def get_status() -> Status:
+    return Status(
+        status="OK",
+        version=SETTINGS.api_version,
+        models_hosted=SETTINGS.models.values(),
+    )
+
+@app.get('/reports', description=reports_description)
 async def export_csv():
     if not entries:
         raise HTTPException(status_code=404, detail="No data available")

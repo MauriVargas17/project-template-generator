@@ -1,6 +1,6 @@
 import time
-from src.config import get_settings
-from src.models import Sentiment
+from src.utils.config import get_settings
+from src.utils.models import Sentiment
 from transformers import pipeline
 
 SETTINGS = get_settings()
